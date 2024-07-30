@@ -9,5 +9,5 @@ spring:
     ansi:
       enabled: always
 
-server:
-  port: 7070
+#server:
+#  port: 7070
