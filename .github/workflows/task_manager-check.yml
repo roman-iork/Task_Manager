@@ -1,4 +1,4 @@
-name: my-check
+name: task_manager-check
 
 on:
   - push
