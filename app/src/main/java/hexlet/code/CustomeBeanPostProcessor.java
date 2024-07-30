@@ -1,4 +1,4 @@
-package hexlet.code.app.controller;
+package hexlet.code;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +23,7 @@ public class CustomeBeanPostProcessor implements BeanPostProcessor {
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-        System.out.println(beanSet.size());
+//        System.out.println(beanSet.size());
         return bean;
     }
 }
