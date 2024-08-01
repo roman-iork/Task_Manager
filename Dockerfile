@@ -6,4 +6,6 @@ COPY ./app .
 
 RUN gradle installBootDist
 
-CMD ./build/install/app-boot/bin/app
+#CMD ./build/install/app-boot/bin/app
+
+CMD java -jar build/install/app-boot/lib/app-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
