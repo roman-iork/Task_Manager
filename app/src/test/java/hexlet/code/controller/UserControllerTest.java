@@ -77,7 +77,10 @@ class UserControllerTest {
     public void testCreateUser() throws Exception {
         var request = post("/api/users")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"email\": \"jack@google.com\", \"firstName\": \"Jack\", \"lastName\": \"Jons\", \"password\": \"some-password\"}");
+                .content("{\"email\": \"jack@google.com\","
+                        + "\"firstName\": \"Jack\","
+                        + "\"lastName\": \"Jons\","
+                        + "\"password\": \"some-password\"}");
         var body = mockMvc.perform(request)
                 .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
