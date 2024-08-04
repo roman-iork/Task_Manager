@@ -3,6 +3,7 @@ package hexlet.code.controller;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hexlet.code.dto.UserDTO;
+import hexlet.code.exception.NoSuchResourceException;
 import hexlet.code.mapper.UserMapper;
 import hexlet.code.model.User;
 import hexlet.code.repository.UserRepository;
@@ -39,30 +40,32 @@ class UserControllerTest {
     @Autowired
     private Faker faker;
 
+    private User testUser;
+
 
     @BeforeEach
     public void setUp() {
-        var user = new User();
-        user.setFirstName(faker.name().firstName());
-        user.setLastName("Mallow");
-        user.setEmail(faker.internet().emailAddress());
-        user.setPassword(faker.internet().password());
-        userRepository.save(user);
+        testUser = new User();
+        testUser.setFirstName(faker.name().firstName());
+        testUser.setLastName("Mallow");
+        testUser.setEmail(faker.internet().emailAddress());
+        testUser.setPassword(faker.internet().password());
+        userRepository.save(testUser);
     }
 
     @Test
     public void testShowUser() throws Exception {
-        var body = mockMvc.perform(get("/api/users/1"))
+        var testUserId = testUser.getId();
+        var body = mockMvc.perform(get("/api/users/" + testUserId))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
         var actualUserDTO = objectMapper.readValue(body, new TypeReference<UserDTO>() {
         });
-        var expectedUserDTO = userRepository.findById(1L).get();
-        assertThat(actualUserDTO.getFirstName()).isEqualTo(expectedUserDTO.getFirstName());
+        assertThat(actualUserDTO.getFirstName()).isEqualTo(testUser.getFirstName());
     }
 
     @Test
-    public void testIndexUsers() throws Exception {
+    public void testShowAllUsers() throws Exception {
         var body = mockMvc.perform(get("/api/users"))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
@@ -86,7 +89,8 @@ class UserControllerTest {
                 .andReturn().getResponse().getContentAsString();
         var actualUserDTO = objectMapper.readValue(body, new TypeReference<UserDTO>() {
             });
-        var user = userRepository.findByEmail("jack@google.com");
+        var user = userRepository.findByEmail("jack@google.com")
+                .orElseThrow(() -> new NoSuchResourceException("No user with such email!"));
         var expectedUserDTO = userMapper.map(user);
         assertThat(actualUserDTO.getFirstName()).isEqualTo(expectedUserDTO.getFirstName());
         assertThat(actualUserDTO.getId()).isEqualTo(expectedUserDTO.getId());
@@ -102,7 +106,8 @@ class UserControllerTest {
                 .andReturn().getResponse().getContentAsString();
         var actualUserDTO = objectMapper.readValue(body, new TypeReference<UserDTO>() {
             });
-        var user = userRepository.findById(1L).get();
+        var user = userRepository.findById(1L)
+                .orElseThrow(() -> new NoSuchResourceException("No user with such id!"));
         var expectedUserDTO = userMapper.map(user);
         assertThat(actualUserDTO.getEmail()).isEqualTo("new@new.com");
         assertThat(expectedUserDTO.getEmail()).isEqualTo("new@new.com");

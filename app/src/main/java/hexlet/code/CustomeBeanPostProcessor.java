@@ -23,8 +23,8 @@ public class CustomeBeanPostProcessor implements BeanPostProcessor {
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) {
-//        if (beanName.contains("userRepository")) {
-//            System.out.println(bean.getClass() + "  " + beanName + "bean___bean___bean___bean___bean___");
+//        if (beanName.contains("AdminUserBean")) {
+//            System.out.println(bean.getClass() + "___" + beanName + "bean___bean___bean___bean___bean___");
 //        }
         return bean;
     }

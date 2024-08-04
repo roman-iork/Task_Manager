@@ -4,10 +4,12 @@ import hexlet.code.dto.UserCreateDTO;
 import hexlet.code.dto.UserDTO;
 import hexlet.code.dto.UserUpdateDTO;
 import hexlet.code.mapper.UserMapper;
+import hexlet.code.model.User;
 import hexlet.code.repository.UserRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,6 +32,9 @@ public class UserController {
     @Autowired
     private UserMapper userMapper;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @GetMapping("/users")
     public List<UserDTO> index() {
         var users = userRepository.findAll();
@@ -46,6 +51,7 @@ public class UserController {
     @ResponseStatus(HttpStatus.CREATED)
     public UserDTO create(@Valid @RequestBody UserCreateDTO userData) {
         var user = userMapper.map(userData);
+        user.setPassword(hashPassword(user));
         userRepository.save(user);
         return userMapper.map(user);
     }
@@ -55,6 +61,9 @@ public class UserController {
                           @Valid @RequestBody UserUpdateDTO userData) {
         var user = userRepository.findById(id).get();
         userMapper.update(userData, user);
+        if (userData.getPassword() != null && userData.getPassword().orElse(null) != null) {
+            user.setPassword(hashPassword(user));
+        }
         userRepository.save(user);
         return userMapper.map(user);
     }
@@ -63,5 +72,10 @@ public class UserController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable long id) {
         userRepository.deleteById(id);
+    }
+
+    private String hashPassword(User user) {
+        var password = user.getPassword();
+        return passwordEncoder.encode(password);
     }
 }
