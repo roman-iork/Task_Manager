@@ -39,7 +39,7 @@ public class LoginController {
         var tokenBase = new UsernamePasswordAuthenticationToken(
                 authRequest.getUsername(),
                 authRequest.getPassword(),
-                List.of(new SimpleGrantedAuthority(user.getRole().name())));
+                List.of(new SimpleGrantedAuthority(user.getRole())));
 
         authenticationManager.authenticate(tokenBase);
 

@@ -43,7 +43,7 @@ public class User implements UserDetails {
 
     private String passwordHashed;
 
-    private Role role;
+    private String role;
 
     @CreatedDate
     private LocalDate createdAt;
@@ -56,7 +56,7 @@ public class User implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         var authorities = new ArrayList<GrantedAuthority>();
-        authorities.add(new SimpleGrantedAuthority(role.name()));
+        authorities.add(new SimpleGrantedAuthority(role));
         return authorities;
     }
 

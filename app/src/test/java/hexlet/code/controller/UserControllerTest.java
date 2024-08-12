@@ -19,7 +19,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
-import static hexlet.code.model.Role.ROLE_USER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -57,7 +56,7 @@ class UserControllerTest {
         testUser.setLastName(faker.name().lastName());
         testUser.setEmail(faker.internet().emailAddress());
         testUser.setPasswordHashed(passwordEncoder.encode(password));
-        testUser.setRole(ROLE_USER);
+        testUser.setRole("ROLE_USER");
         userRepository.save(testUser);
 
         tokenAdmin = this.mockMvc.perform(post("/api/login")
@@ -225,7 +224,7 @@ class UserControllerTest {
         user.setLastName(faker.name().lastName());
         user.setEmail(faker.internet().emailAddress());
         user.setPasswordHashed(passwordEncoder.encode(password));
-        user.setRole(ROLE_USER);
+        user.setRole("ROLE_USER");
         userRepository.save(user);
         return user;
     }

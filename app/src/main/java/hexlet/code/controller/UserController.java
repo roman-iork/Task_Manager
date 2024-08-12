@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-import static hexlet.code.model.Role.ROLE_USER;
 import static java.lang.String.format;
 
 @RestController
@@ -61,7 +60,7 @@ public class UserController {
     public UserDTO create(@Valid @RequestBody UserCreateDTO userData) {
         var user = userMapper.map(userData);
         user.setPasswordHashed(hashPassword(user));
-        user.setRole(ROLE_USER);
+        user.setRole("ROLE_USER");
         userRepository.save(user);
         return userMapper.map(user);
     }
