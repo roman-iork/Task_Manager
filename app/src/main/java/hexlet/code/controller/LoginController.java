@@ -32,16 +32,18 @@ public class LoginController {
 
     @RequestMapping("/login")
     public String authenticate(@RequestBody AuthRequest authRequest) {
-        var user = userRepository.findByEmail(authRequest.getEmail())
-                .orElseThrow(() -> new NoSuchResourceException(format("No user by email: %s", authRequest.getEmail())));
+        var user = userRepository.findByEmail(authRequest.getUsername())
+                .orElseThrow(() ->
+                        new NoSuchResourceException(format("No user by email: %s", authRequest.getUsername()))
+                );
         var tokenBase = new UsernamePasswordAuthenticationToken(
-                authRequest.getEmail(),
+                authRequest.getUsername(),
                 authRequest.getPassword(),
                 List.of(new SimpleGrantedAuthority(user.getRole().name())));
 
         authenticationManager.authenticate(tokenBase);
 
-        var token = jwtUtils.generateToken(authRequest.getEmail());
+        var token = jwtUtils.generateToken(authRequest.getUsername());
         return token;
     }
 

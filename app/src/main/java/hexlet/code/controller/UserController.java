@@ -10,6 +10,7 @@ import hexlet.code.repository.UserRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,14 +40,13 @@ public class UserController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-//    @Autowired
-//    private SecurityContext securityContext;
-
     @GetMapping("/users")
-    public List<UserDTO> index() {
+    public ResponseEntity<List<UserDTO>> index() {
         var users = userRepository.findAll();
-//        System.out.println(securityContext.getAuthentication().isAuthenticated() + "========================");
-        return users.stream().map(u -> userMapper.map(u)).toList();
+        var usersInDTOFormat = users.stream().map(u -> userMapper.map(u)).toList();
+        return ResponseEntity.ok()
+                .header("x-total-count", String.valueOf(users.size()))
+                .body(usersInDTOFormat);
     }
 
     @GetMapping("/users/{id}")

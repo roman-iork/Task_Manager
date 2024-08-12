@@ -25,6 +25,6 @@ class WelcomeControllerTest {
                 .andReturn();
 
         var body = result.getResponse().getContentAsString();
-        assertThat(body).isEqualTo("Welcome to String!");
+        assertThat(body).isEqualTo("Welcome to Spring!");
     }
 }

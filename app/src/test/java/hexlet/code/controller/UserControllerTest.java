@@ -50,6 +50,7 @@ class UserControllerTest {
 
     @BeforeEach
     public void setUp() throws Exception {
+
         var password = faker.internet().domainWord();
         testUser = new User();
         testUser.setFirstName(faker.name().firstName());
@@ -61,7 +62,7 @@ class UserControllerTest {
 
         tokenAdmin = this.mockMvc.perform(post("/api/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\": \"hexlet@example.com\","
+                        .content("{\"username\": \"hexlet@example.com\","
                                 + "\"password\": \"qwerty\"}"))
                 .andExpect(status().isOk())
                 .andReturn()
@@ -70,7 +71,7 @@ class UserControllerTest {
 
         tokenUser = this.mockMvc.perform(post("/api/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\": \"" + testUser.getEmail()
+                        .content("{\"username\": \"" + testUser.getEmail()
                                 + "\", \"password\": \"" + password + "\"}"))
                 .andExpect(status().isOk())
                 .andReturn()
@@ -228,6 +229,4 @@ class UserControllerTest {
         userRepository.save(user);
         return user;
     }
-
-
 }
