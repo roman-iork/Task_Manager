@@ -4,7 +4,8 @@ spring:
   jpa:
     show-sql: true
     hibernate:
-      ddl-auto: update
+      #ddl-auto: update
+      ddl-auto: create
   output:
     ansi:
       enabled: always
