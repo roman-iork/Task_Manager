@@ -3,6 +3,7 @@ package hexlet.code.controller;
 import hexlet.code.dto.UserCreateDTO;
 import hexlet.code.dto.UserDTO;
 import hexlet.code.dto.UserUpdateDTO;
+import hexlet.code.exception.NoSuchResourceException;
 import hexlet.code.mapper.UserMapper;
 import hexlet.code.model.User;
 import hexlet.code.repository.UserRepository;
@@ -22,6 +23,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+import static hexlet.code.model.Role.ROLE_USER;
+import static java.lang.String.format;
+
 @RestController
 @RequestMapping("/api")
 public class UserController {
@@ -35,15 +39,20 @@ public class UserController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+//    @Autowired
+//    private SecurityContext securityContext;
+
     @GetMapping("/users")
     public List<UserDTO> index() {
         var users = userRepository.findAll();
+//        System.out.println(securityContext.getAuthentication().isAuthenticated() + "========================");
         return users.stream().map(u -> userMapper.map(u)).toList();
     }
 
     @GetMapping("/users/{id}")
     public UserDTO show(@PathVariable long id) {
-        var user = userRepository.findById(id).orElseThrow();
+        var user = userRepository.findById(id)
+                .orElseThrow(() -> new NoSuchResourceException(format("No user with id %o!", id)));
         return userMapper.map(user);
     }
 
@@ -51,7 +60,8 @@ public class UserController {
     @ResponseStatus(HttpStatus.CREATED)
     public UserDTO create(@Valid @RequestBody UserCreateDTO userData) {
         var user = userMapper.map(userData);
-        user.setPassword(hashPassword(user));
+        user.setPasswordHashed(hashPassword(user));
+        user.setRole(ROLE_USER);
         userRepository.save(user);
         return userMapper.map(user);
     }
@@ -59,10 +69,11 @@ public class UserController {
     @PutMapping("/users/{id}")
     public UserDTO update(@PathVariable long id,
                           @Valid @RequestBody UserUpdateDTO userData) {
-        var user = userRepository.findById(id).get();
+        var user = userRepository.findById(id)
+                .orElseThrow(() -> new NoSuchResourceException(format("No user with id %o!", id)));
         userMapper.update(userData, user);
         if (userData.getPassword() != null && userData.getPassword().orElse(null) != null) {
-            user.setPassword(hashPassword(user));
+            user.setPasswordHashed(hashPassword(user));
         }
         userRepository.save(user);
         return userMapper.map(user);
@@ -75,7 +86,7 @@ public class UserController {
     }
 
     private String hashPassword(User user) {
-        var password = user.getPassword();
+        var password = user.getPasswordHashed();
         return passwordEncoder.encode(password);
     }
 }

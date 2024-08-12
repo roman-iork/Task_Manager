@@ -9,6 +9,8 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import static hexlet.code.model.Role.ROLE_ADMIN;
+
 @Component
 public class InitAdminUser implements ApplicationRunner {
     @Autowired
@@ -27,7 +29,8 @@ public class InitAdminUser implements ApplicationRunner {
             user.setFirstName(faker.name().firstName());
             user.setLastName(faker.name().lastName());
             user.setEmail("hexlet@example.com");
-            user.setPassword(passwordEncoder.encode("qwerty"));
+            user.setPasswordHashed(passwordEncoder.encode("qwerty"));
+            user.setRole(ROLE_ADMIN);
             userRepository.save(user);
         }
     }
