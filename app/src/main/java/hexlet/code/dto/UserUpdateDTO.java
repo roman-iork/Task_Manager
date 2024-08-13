@@ -14,6 +14,7 @@ public class UserUpdateDTO {
     @Column(unique = true)
     @NotNull
     private JsonNullable<String> email;
+
     @NotNull
     private JsonNullable<String> password;
 }

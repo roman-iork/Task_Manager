@@ -4,6 +4,7 @@ import hexlet.code.dto.AuthRequest;
 import hexlet.code.exception.NoSuchResourceException;
 import hexlet.code.repository.UserRepository;
 import hexlet.code.utils.JWTUtils;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -31,7 +32,7 @@ public class LoginController {
     private UserRepository userRepository;
 
     @RequestMapping("/login")
-    public String authenticate(@RequestBody AuthRequest authRequest) {
+    public String authenticate(@Valid @RequestBody AuthRequest authRequest) {
         var user = userRepository.findByEmail(authRequest.getUsername())
                 .orElseThrow(() ->
                         new NoSuchResourceException(format("(CtrLgn)No user email: %s", authRequest.getUsername()))

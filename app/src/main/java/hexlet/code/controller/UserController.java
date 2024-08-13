@@ -84,9 +84,8 @@ public class UserController {
 
     @DeleteMapping("/users/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public String delete(@PathVariable long id) {
+    public void delete(@PathVariable long id) {
         userRepository.deleteById(id);
-        return "redirect:/logout";
     }
 
     private String hashPassword(User user) {

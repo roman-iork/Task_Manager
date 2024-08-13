@@ -26,8 +26,9 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 
 	implementation("org.openapitools:jackson-databind-nullable:0.2.6")
-	implementation("org.mapstruct:mapstruct:1.5.5.Final")
+	implementation('org.mapstruct:mapstruct:1.6.0')
 	implementation('net.datafaker:datafaker:2.3.0')
+	implementation('org.instancio:instancio-junit:5.0.1')
 
 
 	compileOnly 'org.projectlombok:lombok'
@@ -36,7 +37,7 @@ dependencies {
 	runtimeOnly 'org.postgresql:postgresql:42.7.3'
 	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 	annotationProcessor 'org.projectlombok:lombok'
-	annotationProcessor("org.mapstruct:mapstruct-processor:1.5.5.Final")
+	annotationProcessor('org.mapstruct:mapstruct-processor:1.6.0')
 
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
