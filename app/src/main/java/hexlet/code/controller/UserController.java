@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,6 +40,9 @@ public class UserController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
     @GetMapping("/users")
     public ResponseEntity<List<UserDTO>> index() {
         var users = userRepository.findAll();
@@ -51,7 +55,7 @@ public class UserController {
     @GetMapping("/users/{id}")
     public UserDTO show(@PathVariable long id) {
         var user = userRepository.findById(id)
-                .orElseThrow(() -> new NoSuchResourceException(format("No user with id %o!", id)));
+                .orElseThrow(() -> new NoSuchResourceException(format("(CtrShw)No user with id %o!", id)));
         return userMapper.map(user);
     }
 
@@ -69,7 +73,7 @@ public class UserController {
     public UserDTO update(@PathVariable long id,
                           @Valid @RequestBody UserUpdateDTO userData) {
         var user = userRepository.findById(id)
-                .orElseThrow(() -> new NoSuchResourceException(format("No user with id %o!", id)));
+                .orElseThrow(() -> new NoSuchResourceException(format("(CtrUpd)No user with id %o!", id)));
         userMapper.update(userData, user);
         if (userData.getPassword() != null && userData.getPassword().orElse(null) != null) {
             user.setPasswordHashed(hashPassword(user));
@@ -80,8 +84,9 @@ public class UserController {
 
     @DeleteMapping("/users/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable long id) {
+    public String delete(@PathVariable long id) {
         userRepository.deleteById(id);
+        return "redirect:/logout";
     }
 
     private String hashPassword(User user) {

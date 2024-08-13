@@ -50,8 +50,6 @@ public class User implements UserDetails {
     @LastModifiedDate
     private LocalDate updatedAt;
 
-
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
 //        var authorities = new ArrayList<GrantedAuthority>();

@@ -34,7 +34,7 @@ public class LoginController {
     public String authenticate(@RequestBody AuthRequest authRequest) {
         var user = userRepository.findByEmail(authRequest.getUsername())
                 .orElseThrow(() ->
-                        new NoSuchResourceException(format("No user by email: %s", authRequest.getUsername()))
+                        new NoSuchResourceException(format("(CtrLgn)No user email: %s", authRequest.getUsername()))
                 );
         var tokenBase = new UsernamePasswordAuthenticationToken(
                 authRequest.getUsername(),

@@ -24,7 +24,7 @@ public class JWTUtils {
 
     public String generateToken(String userEmail) {
         var user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new NoSuchResourceException(format("No user with email: %s", userEmail)));
+                .orElseThrow(() -> new NoSuchResourceException(format("(Jwt)No user with email: %s", userEmail)));
         Instant now = Instant.now();
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer("self")
@@ -32,6 +32,7 @@ public class JWTUtils {
                 .expiresAt(now.plus(1, ChronoUnit.HOURS))
                 .subject(userEmail)
                 .claim("scope", user.getRole())
+                .claim("userId", user.getId())
                 .build();
         return this.encoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
     }

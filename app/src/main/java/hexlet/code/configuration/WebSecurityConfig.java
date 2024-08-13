@@ -20,12 +20,12 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.expression.DefaultHttpSecurityExpressionHandler;
 import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
 
-import static java.lang.String.format;
 import static org.springframework.security.authorization.AuthorityAuthorizationManager.hasRole;
 import static org.springframework.security.authorization.AuthorizationManagers.allOf;
 import static org.springframework.security.authorization.AuthorizationManagers.anyOf;
@@ -72,6 +72,7 @@ public class WebSecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/users/{userId}")
                             .access(anyOf(allOf(hasTheSameUserId, hasRole("USER")), hasRole("ADMIN")))
                         .anyRequest().authenticated())
+//                .logout((logout) -> logout.)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .oauth2ResourceServer((rs) -> rs.jwt((jwt) -> jwt.decoder(jwtDecoder)))
                 .httpBasic(Customizer.withDefaults());
@@ -93,9 +94,10 @@ public class WebSecurityConfig {
     }
 
     public boolean checkUserId(Authentication authentication, long id) {
-        var email = authentication.getName();
-        var user = userRepository.findByEmail(email)
-                        .orElseThrow(() -> new NoSuchResourceException(format("No user with email: %s", email)));
-        return user.getId() == id;
+        var authUserId = (Long) ((Jwt) authentication.getPrincipal()).getClaims().get("userId");
+        if (authUserId == null) {
+            throw new NoSuchResourceException("(WbSc)No userId by token");
+        }
+        return authUserId == id;
     }
 }
