@@ -3,6 +3,7 @@ package hexlet.code.controller;
 import hexlet.code.dto.UserCreateDTO;
 import hexlet.code.dto.UserDTO;
 import hexlet.code.dto.UserUpdateDTO;
+import hexlet.code.exception.ForeignKeyConstraintException;
 import hexlet.code.exception.NoSuchResourceException;
 import hexlet.code.mapper.UserMapper;
 import hexlet.code.model.User;
@@ -85,7 +86,11 @@ public class UserController {
     @DeleteMapping("/users/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable long id) {
-        userRepository.deleteById(id);
+        try {
+            userRepository.deleteById(id);
+        } catch (Exception exception) {
+            throw new ForeignKeyConstraintException("Can't delete user since it's connected with task");
+        }
     }
 
     private String hashPassword(User user) {

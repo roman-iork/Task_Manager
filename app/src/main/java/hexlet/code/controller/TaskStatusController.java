@@ -3,6 +3,7 @@ package hexlet.code.controller;
 import hexlet.code.dto.TaskStatusCreateDTO;
 import hexlet.code.dto.TaskStatusDTO;
 import hexlet.code.dto.TaskStatusUpdateDTO;
+import hexlet.code.exception.ForeignKeyConstraintException;
 import hexlet.code.exception.NoSuchResourceException;
 import hexlet.code.mapper.TaskStatusMapper;
 import hexlet.code.repository.TaskStatusRepository;
@@ -70,6 +71,10 @@ public class TaskStatusController {
     @DeleteMapping("/task_statuses/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable long id) {
-        taskStatusRepository.deleteById(id);
+        try {
+            taskStatusRepository.deleteById(id);
+        } catch (Exception exception) {
+            throw new ForeignKeyConstraintException("Can't delete this status since it is connected with some task");
+        }
     }
 }

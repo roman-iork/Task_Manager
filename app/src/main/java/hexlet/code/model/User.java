@@ -8,6 +8,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -27,7 +28,7 @@ import java.util.Collection;
 @Setter
 @EntityListeners(AuditingEntityListener.class)
 @ToString
-public class User implements UserDetails {
+public class User implements UserDetails, BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
@@ -38,10 +39,13 @@ public class User implements UserDetails {
 
     @Email
     @Column(unique = true)
+    @NotNull
     private String email;
 
+    @NotNull
     private String passwordHashed;
 
+    @NotNull
     private String role;
 
     @CreatedDate
@@ -52,8 +56,6 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-//        var authorities = new ArrayList<GrantedAuthority>();
-//        authorities.add(new SimpleGrantedAuthority(role));
         return new ArrayList<>();
     }
 

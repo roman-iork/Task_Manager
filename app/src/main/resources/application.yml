@@ -4,17 +4,17 @@ spring:
   jpa:
     show-sql: true
     hibernate:
-      ddl-auto: update
-#      ddl-auto: create
+#      ddl-auto: update
+      ddl-auto: create
   output:
     ansi:
       enabled: always
   profiles:
     default: dev
 
-logging:
-  level:
-    org.springframework.security: TRACE
+#logging:
+#  level:
+#    org.springframework.security: TRACE
 
 rsa:
   private-key: classpath:certs/private.pem

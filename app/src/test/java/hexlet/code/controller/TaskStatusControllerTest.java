@@ -34,7 +34,7 @@ class TaskStatusControllerTest {
     private String tokenAdmin;
 
     @BeforeEach
-    public void fillTableWithStatuses() throws Exception {
+    public void gettingAdminToken() throws Exception {
         tokenAdmin = this.mockMvc.perform(post("/api/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"username\": \"hexlet@example.com\","
@@ -108,10 +108,19 @@ class TaskStatusControllerTest {
 
     @Test
     public void testDelete() throws Exception {
-        long testId = 3;
-        mockMvc.perform(delete("/api/task_statuses/" + testId)
+        var status = generateStatus();
+        long testStatusId = status.getId();
+        mockMvc.perform(delete("/api/task_statuses/" + testStatusId)
                                     .header("Authorization", "Bearer " + tokenAdmin))
                                 .andExpect(status().is(204));
-        assertThat(taskStatusRepository.findById(testId).orElse(null)).isEqualTo(null);
+        assertThat(taskStatusRepository.findById(testStatusId).orElse(null)).isEqualTo(null);
+    }
+
+    private TaskStatus generateStatus() {
+        var status = new TaskStatus();
+        status.setName("Archived");
+        status.setSlug("archived");
+        taskStatusRepository.save(status);
+        return status;
     }
 }
