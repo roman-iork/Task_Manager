@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hexlet.code.model.TaskStatus;
 import hexlet.code.repository.TaskStatusRepository;
+import hexlet.code.util.GenerateModels;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,8 @@ class TaskStatusControllerTest {
     private MockMvc mockMvc;
     @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
+    private GenerateModels generate;
 
     private String tokenAdmin;
 
@@ -108,19 +111,11 @@ class TaskStatusControllerTest {
 
     @Test
     public void testDelete() throws Exception {
-        var status = generateStatus();
+        var status = generate.generateStatus();
         long testStatusId = status.getId();
         mockMvc.perform(delete("/api/task_statuses/" + testStatusId)
                                     .header("Authorization", "Bearer " + tokenAdmin))
                                 .andExpect(status().is(204));
         assertThat(taskStatusRepository.findById(testStatusId).orElse(null)).isEqualTo(null);
-    }
-
-    private TaskStatus generateStatus() {
-        var status = new TaskStatus();
-        status.setName("Archived");
-        status.setSlug("archived");
-        taskStatusRepository.save(status);
-        return status;
     }
 }

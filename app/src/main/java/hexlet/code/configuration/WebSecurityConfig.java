@@ -52,10 +52,12 @@ public class WebSecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http, ApplicationContext context) throws Exception {
         var expressionHandler = new DefaultHttpSecurityExpressionHandler();
         expressionHandler.setApplicationContext(context);
+
         var hasTheSameUserId = new WebExpressionAuthorizationManager(
                 "@webSecurityConfig.checkUserId(authentication, #userId)"
         );
         hasTheSameUserId.setExpressionHandler(expressionHandler);
+
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((auth) -> auth
@@ -72,7 +74,6 @@ public class WebSecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/users/{userId}")
                             .access(anyOf(allOf(hasTheSameUserId, hasRole("USER")), hasRole("ADMIN")))
                         .anyRequest().authenticated())
-//                .logout((logout) -> logout.)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .oauth2ResourceServer((rs) -> rs.jwt((jwt) -> jwt.decoder(jwtDecoder)))
                 .httpBasic(Customizer.withDefaults());

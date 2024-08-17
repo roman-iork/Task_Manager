@@ -5,11 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import hexlet.code.dto.TaskDTO;
 import hexlet.code.exception.NoSuchResourceException;
 import hexlet.code.mapper.TaskMapper;
-import hexlet.code.model.Task;
-import hexlet.code.model.User;
+import hexlet.code.repository.LabelRepository;
 import hexlet.code.repository.TaskRepository;
-import hexlet.code.repository.TaskStatusRepository;
-import hexlet.code.repository.UserRepository;
+import hexlet.code.util.GenerateModels;
 import net.datafaker.Faker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,13 +15,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -40,15 +39,13 @@ class TaskControllerTest {
     @Autowired
     private TaskRepository taskRepository;
     @Autowired
-    private TaskStatusRepository statusRepository;
-    @Autowired
-    private UserRepository userRepository;
+    private LabelRepository labelRepository;
     @Autowired
     private TaskMapper taskMapper;
     @Autowired
     private Faker faker;
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    private GenerateModels generate;
 
     private String tokenAdmin;
     private String tokenUser;
@@ -64,15 +61,8 @@ class TaskControllerTest {
                 .getResponse()
                 .getContentAsString();
 
-        var testUser = new User();
         var password = faker.internet().domainWord();
-        testUser = new User();
-        testUser.setFirstName(faker.name().firstName());
-        testUser.setLastName(faker.name().lastName());
-        testUser.setEmail(faker.internet().emailAddress());
-        testUser.setPasswordHashed(passwordEncoder.encode(password));
-        testUser.setRole("ROLE_USER");
-        userRepository.save(testUser);
+        var testUser = generate.generateUser(password);
 
         tokenUser = this.mockMvc.perform(post("/api/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -85,9 +75,10 @@ class TaskControllerTest {
     }
 
     @Test
+    @Transactional
     public void testShow() throws Exception {
         long taskId = 2;
-        var testTask = taskRepository.findById(taskId)
+        var expectedTask = taskRepository.findById(taskId)
                 .orElseThrow(() -> new NoSuchResourceException(format("(TstShow)No task with id %o", taskId)));
         var body = mockMvc.perform(get("/api/tasks/" + taskId)
                 .header("Authorization", "Bearer " + tokenAdmin))
@@ -95,22 +86,26 @@ class TaskControllerTest {
                 .andReturn().getResponse().getContentAsString();
         var taskDTO = objectMapper.readValue(body, new TypeReference<TaskDTO>() {
         });
-        assertThat(taskDTO.getTitle()).isEqualTo(testTask.getName());
+        assertThat(taskDTO.getTitle()).isEqualTo(expectedTask.getName());
+        assertThat(taskDTO.getTaskLabelIds().size()).isEqualTo(expectedTask.getLabels().size());
+        assertThat(taskDTO.getTaskLabelIds()).contains(Math.toIntExact(expectedTask.getLabels().getFirst().getId()));
 
         mockMvc.perform(get("/api/tasks/" + taskId))
                 .andExpect(status().is(401));
     }
 
     @Test
+    @Transactional
     public void testShowAll() throws Exception {
-        var testTasks = taskRepository.findAll();
-        var testTasksDTO = testTasks.stream().map(tsk -> taskMapper.map(tsk)).toList();
+        var expectedTasks = taskRepository.findAll();
+        var testTasksDTO = expectedTasks.stream().map(tsk -> taskMapper.map(tsk)).toList();
         var body = mockMvc.perform(get("/api/tasks")
                 .header("Authorization", "Bearer " + tokenAdmin))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
         var tasksDTO = objectMapper.readValue(body, new TypeReference<List<TaskDTO>>() {
         });
+        assertFalse(tasksDTO.isEmpty());
         assertThat(tasksDTO.size()).isEqualTo(testTasksDTO.size());
         assertThat(tasksDTO).contains(testTasksDTO.getFirst());
 
@@ -119,14 +114,18 @@ class TaskControllerTest {
     }
 
     @Test
+    @Transactional
     public void testCreate() throws Exception {
+        var label = generate.generateLabel("confirmed");
+        var label1 = generate.generateLabel("suspended");
         var body = mockMvc.perform(post("/api/tasks")
                 .header("Authorization", "Bearer " + tokenAdmin)
                 .header("content-type", "application/json")
                 .content("{\"index\": 123,"
-                        + "\"assigneeId\": 3,"
+                        + "\"assignee_id\": 3,"
                         + "\"title\": \"Cleanness\","
                         + "\"content\": \"Dust the room.\","
+                        + "\"taskLabelIds\": [" + label.getId() + ", " + label1.getId() + "],"
                         + "\"status\": \"to_review\"}"))
                 .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
@@ -139,24 +138,37 @@ class TaskControllerTest {
         assertThat(taskOpt.get().getName()).isEqualTo("Cleanness");
         assertThat(taskOpt.get().getTaskStatus().getSlug()).isEqualTo("to_review");
 
+        var actualTask = taskOpt.get();
+        assertThat(actualTask.getLabels()).containsExactlyInAnyOrderElementsOf(List.of(label, label1));
+
         mockMvc.perform(post("/api/tasks")
                         .header("content-type", "application/json")
                         .content("{\"index\": 123,"
-                                + "\"assigneeId\": 3,"
-                                + "\"title\": \"Cleanness\","
-                                + "\"content\": \"Dust the room.\","
                                 + "\"status\": \"to_review\"}"))
                 .andExpect(status().is(401));
     }
 
     @Test
+    @Transactional
     public void testUpdate() throws Exception {
         long taskId = 3;
+        var taskBeforeUpdate = taskRepository.findById(taskId).get();
+        var label = labelRepository.findByName("bug").get();
+        var label1 = labelRepository.findByName("feature").get();
+        assertThat(taskBeforeUpdate.getLabels().size()).isEqualTo(2);
+        assertThat(taskBeforeUpdate.getLabels()).containsExactlyInAnyOrderElementsOf(List.of(label, label1));
+
+        var label2 = generate.generateLabel("suspend");
+        var label3 = generate.generateLabel("reviewed");
+        assertThat(label2.getTasks().size()).isEqualTo(0);
+        assertThat(label3.getTasks().size()).isEqualTo(0);
+
         mockMvc.perform(put("/api/tasks/" + taskId)
                 .header("Authorization", "Bearer " + tokenAdmin)
                 .header("content-type", "application/json")
-                .content("{\"assignee\": 2,"
+                .content("{\"assignee_id\": 2,"
                         + "\"content\": \"Dust bathroom\","
+                        + "\"taskLabelIds\": [" + label2.getId() + ", " + label3.getId() + "],"
                         + "\"title\": \"Do flat\","
                         + "\"status\": \"to_review\"}"))
                 .andExpect(status().isOk())
@@ -169,18 +181,21 @@ class TaskControllerTest {
         assertThat(taskOpt.get().getTaskStatus().getSlug()).isEqualTo("to_review");
         assertThat(taskOpt.get().getName()).isEqualTo("Do flat");
 
+        assertThat(taskOpt.get().getLabels().size()).isEqualTo(2);
+        assertThat(taskOpt.get().getLabels()).containsExactlyInAnyOrderElementsOf(List.of(label2, label3));
+        assertThat(label2.getTasks()).containsExactlyInAnyOrderElementsOf(List.of(taskOpt.get()));
+        assertThat(label3.getTasks()).containsExactlyInAnyOrderElementsOf(List.of(taskOpt.get()));
+
         mockMvc.perform(put("/api/tasks/" + taskId)
                         .header("content-type", "application/json")
                         .content("{\"assignee\": 2,"
-                                + "\"content\": \"Dust bathroom\","
-                                + "\"title\": \"Do flat\","
                                 + "\"status\": \"to_review\"}"))
                 .andExpect(status().is(401));
     }
 
     @Test
     public void testDelete() throws Exception {
-        var task = generateTask();
+        var task = generate.generateTask();
         long taskId = task.getId();
 
         mockMvc.perform(delete("/api/tasks/" + taskId))
@@ -193,25 +208,10 @@ class TaskControllerTest {
         var nullTask = taskRepository.findById(taskId).orElse(null);
         assertThat(nullTask).isEqualTo(null);
 
-        var task1 = generateTask();
-        long task1Id = task.getId();
+        var task1 = generate.generateTask();
+        long task1Id = task1.getId();
         mockMvc.perform(delete("/api/tasks/" + task1Id)
                         .header("Authorization", "Bearer " + tokenUser))
                 .andExpect(status().isNoContent());
-    }
-
-    private Task generateTask() {
-        long statusId = 2;
-        long userId = 3;
-        var task = new Task();
-        task.setName("Walk");
-        task.setIndex(135);
-        task.setDescription("Make a stroll");
-        task.setTaskStatus(statusRepository.findById(statusId)
-                .orElseThrow(() -> new NoSuchResourceException("(TestTask)No such status")));
-        task.setAssignee(userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchResourceException("(TestTask)No such user")));
-        taskRepository.save(task);
-        return task;
     }
 }

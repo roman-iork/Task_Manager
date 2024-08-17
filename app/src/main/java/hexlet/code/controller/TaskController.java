@@ -5,6 +5,8 @@ import hexlet.code.dto.TaskDTO;
 import hexlet.code.dto.TaskUpdateDTO;
 import hexlet.code.exception.NoSuchResourceException;
 import hexlet.code.mapper.TaskMapper;
+import hexlet.code.model.Label;
+import hexlet.code.repository.LabelRepository;
 import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.TaskStatusRepository;
 import hexlet.code.repository.UserRepository;
@@ -41,6 +43,9 @@ public class TaskController {
     @Autowired
     private TaskStatusRepository statusRepository;
 
+    @Autowired
+    private LabelRepository labelRepository;
+
     @GetMapping("/tasks/{id}")
     public TaskDTO show(@PathVariable long id) {
         var task = taskRepository.findById(id)
@@ -62,12 +67,18 @@ public class TaskController {
         var task = taskMapper.map(taskData);
         var assigneeId = task.getAssignee().getId();
         var assignee = userRepository.findById(assigneeId)
-                .orElseThrow(() -> new NoSuchResourceException(format("(CtrCreate)No user with id %o", assigneeId)));
+                .orElseThrow(() -> new NoSuchResourceException(format("(CtrTaskCrt)No user with id %o", assigneeId)));
         var slug = task.getTaskStatus().getSlug();
         var status = statusRepository.findBySlug(slug)
-                .orElseThrow(() -> new NoSuchResourceException(format("(CtrCreate)No status with slug %s", slug)));
+                .orElseThrow(() -> new NoSuchResourceException(format("(CtrCrt)No status with slug %s", slug)));
         task.setAssignee(assignee);
         task.setTaskStatus(status);
+        var labelsIds = taskData.getTaskLabelIds();
+        for (var labelId : labelsIds) {
+            var label = labelRepository.findById((long) labelId)
+                    .orElseThrow(() -> new NoSuchResourceException(format("(CtrTaskCrt)No label with id %o", labelId)));
+            task.addLabel(label);
+        }
         taskRepository.save(task);
         return taskMapper.map(task);
     }
@@ -78,6 +89,27 @@ public class TaskController {
         var task = taskRepository.findById(id)
                 .orElseThrow(() -> new NoSuchResourceException(format("(CtrUpd)No user with id %o", id)));
         taskMapper.update(taskData, task);
+
+        if (taskData.getTaskLabelIds().isPresent()) {
+            List<Long> newLabelsList = taskData.getTaskLabelIds().get().stream().map(Long::valueOf).toList();
+            List<Long> oldLabelsList = task.getLabels().stream().map(Label::getId).toList();
+            for (var oldLabel : oldLabelsList) {
+                if (!newLabelsList.contains(oldLabel)) {
+                    task.removeLabel(labelRepository.findById(oldLabel)
+                            .orElseThrow(() -> new NoSuchResourceException(
+                                    format("(CtrUpd)No label with id %o", oldLabel)
+                            )));
+                }
+            }
+            for (var newLabel : newLabelsList) {
+                if (!oldLabelsList.contains(newLabel)) {
+                    task.addLabel(labelRepository.findById(newLabel)
+                            .orElseThrow(() -> new NoSuchResourceException(
+                                    format("(CtrUpd)No label with id %o", newLabel)
+                            )));
+                }
+            }
+        }
         taskRepository.save(task);
         return taskMapper.map(task);
     }

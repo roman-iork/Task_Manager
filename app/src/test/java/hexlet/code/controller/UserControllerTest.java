@@ -7,6 +7,7 @@ import hexlet.code.exception.NoSuchResourceException;
 import hexlet.code.mapper.UserMapper;
 import hexlet.code.model.User;
 import hexlet.code.repository.UserRepository;
+import hexlet.code.util.GenerateModels;
 import net.datafaker.Faker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
@@ -41,7 +41,7 @@ class UserControllerTest {
     @Autowired
     private Faker faker;
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    private GenerateModels generate;
 
     private User testUser;
     private String tokenAdmin;
@@ -51,13 +51,7 @@ class UserControllerTest {
     public void setUp() throws Exception {
 
         var password = faker.internet().domainWord();
-        testUser = new User();
-        testUser.setFirstName(faker.name().firstName());
-        testUser.setLastName(faker.name().lastName());
-        testUser.setEmail(faker.internet().emailAddress());
-        testUser.setPasswordHashed(passwordEncoder.encode(password));
-        testUser.setRole("ROLE_USER");
-        userRepository.save(testUser);
+        testUser = generate.generateUser(password);
 
         tokenAdmin = this.mockMvc.perform(post("/api/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -156,7 +150,7 @@ class UserControllerTest {
 
     @Test
     public void testUpdateUserAsUnauthorizedUser() throws Exception {
-        var user = generateUser();
+        var user = generate.generateUser();
         var request = put("/api/users/" + user.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"email\": \"efg@new.com\", \"password\": \"new-password\"}")
@@ -189,7 +183,7 @@ class UserControllerTest {
 
     @Test
     public void testDeleteUserByUnauthorizedUser() throws Exception {
-        var user = generateUser();
+        var user = generate.generateUser();
         var request = delete("/api/users/" + user.getId())
                 .header("Authorization", "Bearer " + tokenUser);
         mockMvc.perform(request)
@@ -215,17 +209,5 @@ class UserControllerTest {
         mockMvc.perform(get("/api/admin")
                         .header("Authorization", "Bearer " + tokenUser))
                 .andExpect(status().is(403));
-    }
-
-    private User generateUser() {
-        var user = new User();
-        var password = faker.internet().domainWord();
-        user.setFirstName(faker.name().firstName());
-        user.setLastName(faker.name().lastName());
-        user.setEmail(faker.internet().emailAddress());
-        user.setPasswordHashed(passwordEncoder.encode(password));
-        user.setRole("ROLE_USER");
-        userRepository.save(user);
-        return user;
     }
 }
