@@ -3,6 +3,6 @@
 [![my-check](https://github.com/roman-iork/Task_Manager/actions/workflows/task_manager-check.yml/badge.svg)](https://github.com/roman-iork/Task_Manager/actions/workflows/task_manager-check.yml)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/409f9873e3127a761f0a/test_coverage)](https://codeclimate.com/github/roman-iork/Task_Manager/test_coverage)
 
-[🔸deployment link 🔸](https://task-manager-p7ec.onrender.com/welcome)
+[🔸deployment link 🔸](https://task-manager-p7ec.onrender.com)
 
 #### In progress 🧑🏻‍💻
