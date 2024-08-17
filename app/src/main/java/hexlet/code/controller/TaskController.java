@@ -1,7 +1,9 @@
 package hexlet.code.controller;
 
+import hexlet.code.component.TaskSpecification;
 import hexlet.code.dto.TaskCreateDTO;
 import hexlet.code.dto.TaskDTO;
+import hexlet.code.dto.TaskParamsDTO;
 import hexlet.code.dto.TaskUpdateDTO;
 import hexlet.code.exception.NoSuchResourceException;
 import hexlet.code.mapper.TaskMapper;
@@ -46,6 +48,9 @@ public class TaskController {
     @Autowired
     private LabelRepository labelRepository;
 
+    @Autowired
+    private TaskSpecification taskSpecification;
+
     @GetMapping("/tasks/{id}")
     public TaskDTO show(@PathVariable long id) {
         var task = taskRepository.findById(id)
@@ -54,8 +59,9 @@ public class TaskController {
     }
 
     @GetMapping("/tasks")
-    public ResponseEntity<List<TaskDTO>> index() {
-        var tasks = taskRepository.findAll();
+    public ResponseEntity<List<TaskDTO>> index(TaskParamsDTO parameters) {
+        var specification = taskSpecification.build(parameters);
+        var tasks = taskRepository.findAll(specification);
         return ResponseEntity.ok()
                 .header("x-total-count", String.valueOf(tasks.size()))
                 .body(tasks.stream().map(tsk -> taskMapper.map(tsk)).toList());

@@ -164,13 +164,13 @@ class TaskControllerTest {
         assertThat(label3.getTasks().size()).isEqualTo(0);
 
         mockMvc.perform(put("/api/tasks/" + taskId)
-                .header("Authorization", "Bearer " + tokenAdmin)
-                .header("content-type", "application/json")
-                .content("{\"assignee_id\": 2,"
-                        + "\"content\": \"Dust bathroom\","
-                        + "\"taskLabelIds\": [" + label2.getId() + ", " + label3.getId() + "],"
-                        + "\"title\": \"Do flat\","
-                        + "\"status\": \"to_review\"}"))
+                    .header("Authorization", "Bearer " + tokenAdmin)
+                    .header("content-type", "application/json")
+                    .content("{\"assignee_id\": 2,"
+                            + "\"content\": \"Dust bathroom\","
+                            + "\"taskLabelIds\": [" + label2.getId() + ", " + label3.getId() + "],"
+                            + "\"title\": \"Do flat\","
+                            + "\"status\": \"to_review\"}"))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
@@ -187,9 +187,9 @@ class TaskControllerTest {
         assertThat(label3.getTasks()).containsExactlyInAnyOrderElementsOf(List.of(taskOpt.get()));
 
         mockMvc.perform(put("/api/tasks/" + taskId)
-                        .header("content-type", "application/json")
-                        .content("{\"assignee\": 2,"
-                                + "\"status\": \"to_review\"}"))
+                    .header("content-type", "application/json")
+                    .content("{\"assignee\": 2,"
+                            + "\"status\": \"to_review\"}"))
                 .andExpect(status().is(401));
     }
 
@@ -202,7 +202,7 @@ class TaskControllerTest {
                 .andExpect(status().is(401));
 
         mockMvc.perform(delete("/api/tasks/" + taskId)
-                        .header("Authorization", "Bearer " + tokenAdmin))
+                    .header("Authorization", "Bearer " + tokenAdmin))
                 .andExpect(status().isNoContent());
 
         var nullTask = taskRepository.findById(taskId).orElse(null);
@@ -211,7 +211,53 @@ class TaskControllerTest {
         var task1 = generate.generateTask();
         long task1Id = task1.getId();
         mockMvc.perform(delete("/api/tasks/" + task1Id)
-                        .header("Authorization", "Bearer " + tokenUser))
+                    .header("Authorization", "Bearer " + tokenUser))
                 .andExpect(status().isNoContent());
+    }
+
+    @Test
+    @Transactional
+    public void testFiltering() throws Exception {
+
+        var paramTitle = "titleCont=ea";
+        var paramAssignee = "assigneeId=2";
+        var paramStatus = "status=to_be_fixed";
+        var paramLabel = "labelId=1";
+
+        var bodyTitle = mockMvc.perform(get("/api/tasks?" + paramTitle)
+                    .header("Authorization", "Bearer " + tokenAdmin))
+                .andExpect(status().is(200)).andReturn().getResponse().getContentAsString();
+        var actualTasksTitle = objectMapper.readValue(bodyTitle, new TypeReference<List<TaskDTO>>() {
+        });
+        var tasksExpectedTitle = taskRepository.findAll().stream()
+                        .filter(t -> t.getName().contains("ea"))
+                        .map(model -> taskMapper.map(model))
+                        .toList();
+        assertThat(actualTasksTitle).containsExactlyInAnyOrderElementsOf(tasksExpectedTitle);
+
+        var bodyAssignee = mockMvc.perform(get("/api/tasks?" + paramAssignee)
+                    .header("Authorization", "Bearer " + tokenAdmin))
+                .andExpect(status().is(200)).andReturn().getResponse().getContentAsString();
+        var actualTasksAssignee = objectMapper.readValue(bodyAssignee, new TypeReference<List<TaskDTO>>() {
+        });
+        var tasksExpectedAssignee = taskRepository.findAll().stream()
+                        .filter(t -> t.getAssignee().getId() == 2L)
+                        .map(model -> taskMapper.map(model))
+                        .toList();
+        assertThat(actualTasksAssignee).containsExactlyInAnyOrderElementsOf(tasksExpectedAssignee);
+
+        var label = labelRepository.findById(1L)
+                .orElseThrow(() -> new NoSuchResourceException("(TstTskFltr)No label with id 1"));
+        var bodyStatusAndLabel = mockMvc.perform(get("/api/tasks?" + paramStatus + "&" + paramLabel)
+                    .header("Authorization", "Bearer " + tokenAdmin))
+                .andExpect(status().is(200)).andReturn().getResponse().getContentAsString();
+        var actualTasksStatusAndLabel = objectMapper.readValue(bodyStatusAndLabel, new TypeReference<List<TaskDTO>>() {
+        });
+        var tasksExpectedStatusAndLabel = taskRepository.findAll().stream()
+                        .filter(t -> t.getTaskStatus().getSlug().equals("to_be_fixed"))
+                        .filter(t -> t.getLabels().contains(label))
+                        .map(model -> taskMapper.map(model))
+                        .toList();
+        assertThat(actualTasksStatusAndLabel).containsExactlyInAnyOrderElementsOf(tasksExpectedStatusAndLabel);
     }
 }

@@ -47,7 +47,7 @@ public class Label {
     @ToString.Include
     private LocalDate createdAt;
 
-    @ManyToMany(mappedBy = "labels")//, cascade = CascadeType.ALL)
+    @ManyToMany(mappedBy = "labels")
     private List<Task> tasks = new ArrayList<>();
 
     public void addTask(Task task) {

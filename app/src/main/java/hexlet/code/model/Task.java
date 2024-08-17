@@ -27,7 +27,6 @@ import java.util.List;
 @Setter
 @EntityListeners(AuditingEntityListener.class)
 @ToString
-//@EqualsAndHashCode
 public class Task {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
