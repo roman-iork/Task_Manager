@@ -202,11 +202,11 @@ class UserControllerTest {
 
     @Test
     public void testUnauthorized() throws Exception {
-        mockMvc.perform(get("/api/admin")
+        mockMvc.perform(get("/api/login")
                         .header("Authorization", "Bearer " + tokenAdmin))
                 .andExpect(status().is(200));
 
-        mockMvc.perform(get("/api/admin")
+        mockMvc.perform(get("/api/login")
                         .header("Authorization", "Bearer " + tokenUser))
                 .andExpect(status().is(403));
     }

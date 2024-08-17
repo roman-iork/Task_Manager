@@ -10,6 +10,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -31,7 +32,7 @@ public class LoginController {
     @Autowired
     private UserRepository userRepository;
 
-    @RequestMapping("/login")
+    @PostMapping("/login")
     public String authenticate(@Valid @RequestBody AuthRequest authRequest) {
         var user = userRepository.findByEmail(authRequest.getUsername())
                 .orElseThrow(() ->
@@ -48,7 +49,7 @@ public class LoginController {
         return token;
     }
 
-    @GetMapping("/admin")
+    @GetMapping("/login")
     public String checkAuthorization() {
         return "Authorized";
     }

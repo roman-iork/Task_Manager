@@ -61,14 +61,16 @@ public class WebSecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/api/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/login").permitAll()
                         .requestMatchers("/welcome").permitAll()
                         .requestMatchers("/").permitAll()
+                        .requestMatchers("/swagger-ui/*").permitAll()
+                        .requestMatchers("/v3/**").permitAll()
                         .requestMatchers("/index.html").permitAll()
                         .requestMatchers("/assets/**").permitAll()
                         .requestMatchers("/api/pages/*").permitAll()
                         .requestMatchers("/api/pages").permitAll()
-                        .requestMatchers("/api/admin").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/login").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/users/{userId}")
                             .access(anyOf(allOf(hasTheSameUserId, hasRole("USER")), hasRole("ADMIN")))
                         .requestMatchers(HttpMethod.DELETE, "/api/users/{userId}")
