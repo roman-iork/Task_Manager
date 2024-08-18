@@ -8,4 +8,4 @@ RUN gradle installBootDist
 
 #CMD ./build/install/app-boot/bin/app
 
-CMD java -jar build/install/app-boot/lib/app-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
+CMD java -jar build/install/app-boot/lib/app-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod --sentry.dsn=${SENTRY_AUTH_TOKEN}

@@ -4,6 +4,7 @@ plugins {
 	id 'checkstyle'
 	id 'jacoco'
 	id 'application'
+	id "io.sentry.jvm.gradle" version "4.11.0"
 }
 
 application {

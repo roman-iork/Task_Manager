@@ -7,5 +7,7 @@ spring:
     console:
       enabled: true
 
-#server:
-#  port: 7070
+sentry:
+  dsn:
+  tracesSampleRate: 1.0
+  exception-resolver-order: -2147483647
