@@ -1,0 +1,13 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:dev
+    username: tm
+    password: 123
+  h2:
+    console:
+      enabled: true
+
+sentry:
+  dsn:
+  tracesSampleRate: 1.0
+  exception-resolver-order: -2147483647
