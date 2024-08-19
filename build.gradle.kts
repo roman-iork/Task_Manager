@@ -31,7 +31,7 @@ dependencies {
 	implementation("org.openapitools:jackson-databind-nullable:0.2.6")
 	implementation("org.mapstruct:mapstruct:1.6.0")
 	implementation("net.datafaker:datafaker:2.3.0")
-	implementation("org.instancio:instancio-junit:5.0.1")
+//	implementation("org.instancio:instancio-junit:5.0.1")
 	implementation ("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
 
 

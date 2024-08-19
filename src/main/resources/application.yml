@@ -11,10 +11,10 @@ spring:
   profiles:
     default: dev
 
-  instancio:
-    bean:
-      validation:
-        enabled: true
+#  instancio:
+#    bean:
+#      validation:
+#        enabled: true
 
 #logging:
 #  level:
