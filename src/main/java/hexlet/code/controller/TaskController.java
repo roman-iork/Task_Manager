@@ -72,8 +72,8 @@ public class TaskController {
     public TaskDTO create(@Valid @RequestBody TaskCreateDTO taskData) {
         var task = taskMapper.map(taskData);
         var assigneeId = task.getAssignee().getId();
-        var assignee = userRepository.findById(assigneeId)
-                .orElseThrow(() -> new NoSuchResourceException(format("(CtrTaskCrt)No user with id %o", assigneeId)));
+        var assignee = userRepository.findById(assigneeId).orElse(null);
+//                .orElseThrow(() -> new NoSuchResourceException(format("(CtrTaskCrt)No user with id %o", assigneeId)));
         var slug = task.getTaskStatus().getSlug();
         var status = statusRepository.findBySlug(slug)
                 .orElseThrow(() -> new NoSuchResourceException(format("(CtrCrt)No status with slug %s", slug)));
@@ -96,7 +96,7 @@ public class TaskController {
                 .orElseThrow(() -> new NoSuchResourceException(format("(CtrUpd)No user with id %o", id)));
         taskMapper.update(taskData, task);
 
-        if (taskData.getTaskLabelIds().isPresent()) {
+        if (taskData.getTaskLabelIds() != null && taskData.getTaskLabelIds().isPresent()) {
             List<Long> newLabelsList = taskData.getTaskLabelIds().get().stream().map(Long::valueOf).toList();
             List<Long> oldLabelsList = task.getLabels().stream().map(Label::getId).toList();
             for (var oldLabel : oldLabelsList) {

@@ -31,11 +31,13 @@ dependencies {
 	implementation("org.openapitools:jackson-databind-nullable:0.2.6")
 	implementation("org.mapstruct:mapstruct:1.6.0")
 	implementation("net.datafaker:datafaker:2.3.0")
-//	implementation("org.instancio:instancio-junit:5.0.1")
+	implementation("org.instancio:instancio-junit:5.0.1")
+	testImplementation("net.javacrumbs.json-unit:json-unit-assertj:3.4.1")
+
 	implementation ("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
 
 
-	compileOnly ("org.projectlombok:lombok")
+	implementation ("org.projectlombok:lombok")
 	developmentOnly ("org.springframework.boot:spring-boot-devtools")
 	runtimeOnly ("com.h2database:h2")
 	runtimeOnly ("org.postgresql:postgresql:42.7.3")
