@@ -35,7 +35,6 @@ build/
 
 ### VS Code ###
 #.vscode/
-curl.txt
 src/main/resources/dsn.txt
 /src/test/java/hexlet/project/
 /src/test/java/hexlet/code/controller/LabelTest.java

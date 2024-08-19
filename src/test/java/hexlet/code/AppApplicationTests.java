@@ -24,5 +24,4 @@ class AppApplicationTests {
         assertThat(user).isNotEqualTo(null);
         assertTrue(passwordEncoder.matches("qwerty", user.getPasswordHashed()));
     }
-
 }

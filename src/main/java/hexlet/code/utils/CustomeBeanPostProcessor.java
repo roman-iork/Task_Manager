@@ -1,4 +1,4 @@
-package hexlet.code;
+package hexlet.code.utils;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;

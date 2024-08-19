@@ -73,7 +73,6 @@ public class TaskController {
         var task = taskMapper.map(taskData);
         var assigneeId = task.getAssignee().getId();
         var assignee = userRepository.findById(assigneeId).orElse(null);
-//                .orElseThrow(() -> new NoSuchResourceException(format("(CtrTaskCrt)No user with id %o", assigneeId)));
         var slug = task.getTaskStatus().getSlug();
         var status = statusRepository.findBySlug(slug)
                 .orElseThrow(() -> new NoSuchResourceException(format("(CtrCrt)No status with slug %s", slug)));

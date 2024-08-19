@@ -11,11 +11,6 @@ spring:
   profiles:
     default: dev
 
-#  instancio:
-#    bean:
-#      validation:
-#        enabled: true
-
 #logging:
 #  level:
 #    org.springframework.security: TRACE

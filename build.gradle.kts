@@ -11,8 +11,6 @@ application {
 	mainClass.set("hexlet.code.AppApplication")
 }
 
-//application { mainClass.set("io.hexlet.blog.Application") }
-
 group = "hexlet.code"
 version = "0.0.1-SNAPSHOT"
 
@@ -32,20 +30,17 @@ dependencies {
 	implementation("org.mapstruct:mapstruct:1.6.0")
 	implementation("net.datafaker:datafaker:2.3.0")
 	implementation("org.instancio:instancio-junit:5.0.1")
-	testImplementation("net.javacrumbs.json-unit:json-unit-assertj:3.4.1")
-
 	implementation ("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
-
-
 	implementation ("org.projectlombok:lombok")
-	developmentOnly ("org.springframework.boot:spring-boot-devtools")
+
 	runtimeOnly ("com.h2database:h2")
 	runtimeOnly ("org.postgresql:postgresql:42.7.3")
+	developmentOnly ("org.springframework.boot:spring-boot-devtools")
 	annotationProcessor ("org.springframework.boot:spring-boot-configuration-processor")
 	annotationProcessor ("org.projectlombok:lombok")
 	annotationProcessor("org.mapstruct:mapstruct-processor:1.6.0")
 
-
+	testImplementation("net.javacrumbs.json-unit:json-unit-assertj:3.4.1")
 	testImplementation ("org.springframework.boot:spring-boot-starter-test")
 	testImplementation ("org.springframework.security:spring-security-test")
 	testRuntimeOnly ("org.junit.platform:junit-platform-launcher")

@@ -9,8 +9,6 @@ import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.TaskStatusRepository;
 import hexlet.code.repository.UserRepository;
 import net.datafaker.Faker;
-//import org.instancio.Instancio;
-//import org.instancio.Select;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -55,15 +53,6 @@ public class InitFillingTables implements ApplicationRunner {
         if (userRepository.findAll().isEmpty() || userRepository.findAll().size() == 1) {
             for (int i = 0; i < 3; i++) {
                 var password = faker.internet().domainWord();
-//                var user = Instancio.of(User.class)
-//                        .ignore(Select.field(User::getId))
-//                        .ignore(Select.field(User::getCreatedAt))
-//                        .supply(Select.field(User::getFirstName), () -> faker.name().firstName())
-//                        .supply(Select.field(User::getLastName), () -> faker.name().lastName())
-//                        .supply(Select.field(User::getEmail), () -> faker.internet().emailAddress())
-//                        .supply(Select.field(User::getRole), () -> "ROLE_USER")
-//                        .supply(Select.field(User::getPasswordHashed), () -> passwordEncoder.encode(password))
-//                        .create();
                 var user = new User();
                 user.setFirstName(faker.name().firstName());
                 user.setLastName(faker.name().lastName());
@@ -78,12 +67,6 @@ public class InitFillingTables implements ApplicationRunner {
             var slugList = new ArrayList<>(List.of("draft", "to_review", "to_be_fixed", "to_publish", "published"));
             var nameList = new ArrayList<>(List.of("Draft", "ToReview", "ToBeFixed", "ToPublish", "Published"));
             for (int i = 0; i < 5; i++) {
-//                var taskStatus = Instancio.of(TaskStatus.class)
-//                        .ignore(Select.field(TaskStatus::getId))
-//                        .ignore(Select.field(TaskStatus::getCreatedAt))
-//                        .supply(Select.field(TaskStatus::getName), nameList::removeFirst)
-//                        .supply(Select.field(TaskStatus::getSlug), slugList::removeFirst)
-//                        .create();
                 var taskStatus = new TaskStatus();
                 taskStatus.setName(nameList.removeFirst());
                 taskStatus.setSlug(slugList.removeFirst());

@@ -1,2 +1,0 @@
-setup:
-	./gradlew installBootDist
