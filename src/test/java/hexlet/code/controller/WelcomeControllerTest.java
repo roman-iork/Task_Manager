@@ -23,7 +23,6 @@ class WelcomeControllerTest {
         var result = mockMvc.perform(get("/welcome"))
                 .andExpect(status().isOk())
                 .andReturn();
-
         var body = result.getResponse().getContentAsString();
         assertThat(body).isEqualTo("Welcome to Spring!");
     }

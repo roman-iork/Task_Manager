@@ -20,7 +20,7 @@ class AppApplicationTests {
 
     @Test
     void testAdminUser() {
-        var user = userRepository.findByEmail("hexlet@example.com").get();
+        var user = userRepository.findByEmail("hexlet@example.com").orElse(null);
         assertThat(user).isNotEqualTo(null);
         assertTrue(passwordEncoder.matches("qwerty", user.getPasswordHashed()));
     }

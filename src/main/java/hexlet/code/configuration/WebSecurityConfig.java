@@ -109,6 +109,9 @@ public class WebSecurityConfig {
 
     public boolean checkUserId(Authentication authentication, long id) {
         var authUserEmail = authentication.getName();
+        if (authUserEmail.equals("anonymousUser")) {
+            return false;
+        }
         var user = userRepository.findByEmail(authUserEmail)
                 .orElseThrow(() -> new NoSuchResourceException(format("(WbSc)No user by email %s", authUserEmail)));
         return user.getId() == id;

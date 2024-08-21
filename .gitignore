@@ -41,3 +41,4 @@ src/main/resources/dsn.txt
 /src/test/java/hexlet/code/controller/TaskStatusTest.java
 /src/test/java/hexlet/code/controller/TaskTest.java
 /src/test/java/hexlet/code/controller/UserTest.java
+/node_modules/

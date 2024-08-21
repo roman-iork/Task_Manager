@@ -1,5 +1,6 @@
 package hexlet.code.util;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import hexlet.code.exception.NoSuchResourceException;
 import hexlet.code.model.Label;
 import hexlet.code.model.Task;
@@ -11,8 +12,15 @@ import hexlet.code.repository.TaskStatusRepository;
 import hexlet.code.repository.UserRepository;
 import net.datafaker.Faker;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.HashMap;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Component
 public class GenerateModels {
@@ -28,6 +36,8 @@ public class GenerateModels {
     private TaskRepository taskRepository;
     @Autowired
     private LabelRepository labelRepository;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     public User generateUser(String password) {
         var user = new User();
@@ -73,5 +83,32 @@ public class GenerateModels {
         label.setName(name);
         labelRepository.save(label);
         return label;
+    }
+
+    public String generateAdminToken(MockMvc mockMvc) throws Exception {
+        return mockMvc.perform(post("/api/login")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""
+                                {"username": "hexlet@example.com",
+                                "password": "qwerty"}
+                            """))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+    }
+
+    public String generateUserToken(MockMvc mockMvc, String email, String password) throws Exception {
+        var contentMap = new HashMap<String, String>();
+        contentMap.put("username", email);
+        contentMap.put("password", password);
+        var contentAsString = objectMapper.writeValueAsString(contentMap);
+        return mockMvc.perform(post("/api/login")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(contentAsString))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
     }
 }

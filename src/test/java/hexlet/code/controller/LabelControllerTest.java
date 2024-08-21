@@ -6,6 +6,7 @@ import hexlet.code.dto.LabelDTO;
 import hexlet.code.exception.NoSuchResourceException;
 import hexlet.code.mapper.LabelMapper;
 import hexlet.code.repository.LabelRepository;
+import hexlet.code.util.Content;
 import hexlet.code.util.GenerateModels;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,33 +40,28 @@ public class LabelControllerTest {
     private LabelRepository labelRepository;
     @Autowired
     private LabelMapper labelMapper;
+    @Autowired
+    private Content content;
 
     private String tokenAdmin;
 
     @BeforeEach
     public void gettingAdminToken() throws Exception {
-        tokenAdmin = this.mockMvc.perform(post("/api/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"username\": \"hexlet@example.com\","
-                                + "\"password\": \"qwerty\"}"))
-                .andExpect(status().isOk())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
+        tokenAdmin = generate.generateAdminToken(mockMvc);
     }
 
     @Test
     public void testShow() throws Exception {
         long labelId = 1;
-        var label = labelRepository.findById(labelId)
+        var expectedLabel = labelRepository.findById(labelId)
                 .orElseThrow(() -> new NoSuchResourceException(format("(TstShw)No label with id %o", labelId)));
         var body = mockMvc.perform(get("/api/labels/" + labelId)
                 .header("Authorization", "Bearer " + tokenAdmin))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
-        var labelDTO = objectMapper.readValue(body, new TypeReference<LabelDTO>() {
+        var actualLabelDTO = objectMapper.readValue(body, new TypeReference<LabelDTO>() {
         });
-        assertThat(labelDTO.getName()).isEqualTo(label.getName());
+        assertThat(actualLabelDTO.getName()).isEqualTo(expectedLabel.getName());
 
         mockMvc.perform(get("/api/labels/" + labelId))
                 .andExpect(status().is(401));
@@ -73,16 +69,16 @@ public class LabelControllerTest {
 
     @Test
     public void testShowAll() throws Exception {
-        var labels = labelRepository.findAll();
+        var expectedLabels = labelRepository.findAll();
         var body = mockMvc.perform(get("/api/labels")
                 .header("Authorization", "Bearer " + tokenAdmin))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
-        var labelsDTO = objectMapper.readValue(body, new TypeReference<List<LabelDTO>>() {
+        var actualLabelsDTO = objectMapper.readValue(body, new TypeReference<List<LabelDTO>>() {
         });
-        var actualLabels = labelsDTO.stream().map(l -> labelMapper.mapFromLabelView(l)).toList();
-        assertThat(actualLabels.size()).isEqualTo(labels.size());
-        assertThat(actualLabels).containsExactlyInAnyOrderElementsOf(labels);
+        var actualLabels = actualLabelsDTO.stream().map(l -> labelMapper.mapFromLabelView(l)).toList();
+        assertThat(actualLabels.size()).isEqualTo(expectedLabels.size());
+        assertThat(actualLabels).containsExactlyInAnyOrderElementsOf(expectedLabels);
 
         mockMvc.perform(get("/api/labels"))
                 .andExpect(status().is(401));
@@ -91,25 +87,25 @@ public class LabelControllerTest {
     @Test
     @Transactional
     public void testCreate() throws Exception {
+        var requestContent = content.add("name", "to_remove").build();
         var body = mockMvc.perform(post("/api/labels")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content("{\"name\": \"to_remove\"}")
-                    .header("Authorization", "Bearer " + tokenAdmin))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestContent)
+                .header("Authorization", "Bearer " + tokenAdmin))
                 .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
-
-        var labelDTO = objectMapper.readValue(body, new TypeReference<LabelDTO>() {
-        });
-        var labelId = (long) labelDTO.getId();
-
-        var labelActual = labelRepository.findById(labelId)
-                .orElseThrow(() -> new NoSuchResourceException(format("(TstCrt)No label with id %o", labelId)));
-        assertThat(labelActual.getName()).isEqualTo("to_remove");
-        assertThat(labelActual.getTasks().size()).isEqualTo(0);
+        var actualLabelDTO = objectMapper.readValue(body, new TypeReference<LabelDTO>() {
+            });
+        //check returned value
+        assertThat(actualLabelDTO.getName()).isEqualTo("to_remove");
+        //check data from db
+        var actualLabel = labelRepository.findByName("to_remove").orElse(null);
+        assertThat(actualLabel.getName()).isEqualTo("to_remove");
+        assertThat(actualLabel.getTasks().size()).isEqualTo(0);
 
         mockMvc.perform(post("/api/labels")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content("{\"name\": \"to_improve\"}"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\": \"to_improve\"}"))
                 .andExpect(status().is(401));
     }
 
@@ -118,23 +114,27 @@ public class LabelControllerTest {
     public void testUpdate() throws Exception {
         var testLabel = generate.generateLabel("to_cancel");
         var testLabelId = testLabel.getId();
+        var requestContent = content.add("name", "to_review").build();
         var body = mockMvc.perform(put("/api/labels/" + testLabelId)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\": \"to_review\"}")
+                .content(requestContent)
                 .header("Authorization", "Bearer " + tokenAdmin))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
+        var actualLabelabelDTO = objectMapper.readValue(body, new TypeReference<LabelDTO>() {
+            });
+        //check returned value
+        assertThat(actualLabelabelDTO.getName()).isEqualTo("to_review");
+        //check data from db
+        var actualLabel = labelRepository.findByName("to_review").orElse(null);
+        assertThat(actualLabel).isNotEqualTo(null);
+        assertThat(actualLabel.getId()).isEqualTo(testLabelId);
+        assertThat(actualLabel.getTasks().size()).isEqualTo(0);
 
-        var labelActualDTO = objectMapper.readValue(body, new TypeReference<LabelDTO>() {
-        });
-        assertThat(labelActualDTO.getName()).isEqualTo("to_review");
-
-        var labelActual = labelMapper.mapFromLabelView(labelActualDTO);
-        assertThat(labelActual.getTasks().size()).isEqualTo(0);
-
+        requestContent = content.add("name", "to_discuss").build();
         mockMvc.perform(put("/api/labels/" + testLabelId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\": \"to_discuss\"}"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestContent))
                 .andExpect(status().is(401));
     }
 
@@ -150,7 +150,7 @@ public class LabelControllerTest {
                 .header("Authorization", "Bearer " + tokenAdmin))
                 .andExpect(status().isNoContent());
 
-        var labelActual = labelRepository.findById(testLabelId).orElse(null);
-        assertThat(labelActual).isEqualTo(null);
+        var actual = labelRepository.findById(testLabelId).orElse(null);
+        assertThat(actual).isEqualTo(null);
     }
 }
